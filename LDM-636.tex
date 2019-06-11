@@ -1,0 +1,709 @@
+\documentclass[SE,toc,lsstdraft]{lsstdoc}
+
+% We use commands to make it easy to find where parameter names and units
+% are defined in the tables, and to allow hyphenation.
+\newcommand{\paramname}[1]{\hspace{0pt}#1}
+\newcommand{\unitname}[1]{\hspace{0pt}#1}
+
+\setcounter{secnumdepth}{5}
+
+%% Retrieve date and model version
+\setDocUpstreamLocation{MagicDraw SysML}
+\setDocUpstreamVersion{239}
+
+\date{2019-06-11}
+
+%% Allow arbitrary latex to be inserted at the end of the document.
+%% Define a new version of this command in metadata.tex. It will
+%% be run before the references are displayed.
+\newcommand{\addendum}{}
+
+%% Define the document title, authors, handle, and change record
+\input metadata.tex
+
+% Environment for displaying the parameter tables in
+% a consistent manner. No arguments as there are no
+% captions or labels.
+\newenvironment{parameters}[0]{%
+\setlength\LTleft{0pt}
+\setlength\LTright{\fill}
+\begin{small}
+\begin{longtable}[]{|p{0.49\textwidth}|l|p{0.6in}|p{1.70in}@{}|}
+
+\hline \textbf{Description} & \textbf{Value} & \textbf{Unit} & \textbf{Name} \\ \hline
+\endhead
+
+\hline \multicolumn{4}{r}{\emph{Continued on next page}} \\
+\endfoot
+
+\hline\hline
+\endlastfoot
+}{%
+\hline
+\end{longtable}
+\end{small}
+}
+
+\begin{document}
+\maketitle
+
+This document describes the requirements relating to the Batch Processing Services.  These services should not be confused with IT-level batch services like PBS, Slurm, and HTCondor.  The LSST Batch Production Services are a layer that sits above the IT-level batch services that executes and manages science payloads as "campaigns" consisting of a defined pipeline, a defined configuration, and defined inputs and outputs.
+
+This document does not cover Operation’s requirements that are outside of the scope of the Batch Production Services, e.g., having change board approval (or pre-approved rules) prior to changing a Production configuration. Where Use Cases are mentioned, they are defined in \citeds{LDM-633} which also includes a glossary.
+
+\section{Processing Reliability}
+
+\label{DMS-BPS-REQ-0001}
+\textbf{ID:} DMS-BPS-REQ-0001
+
+\textbf{Specification:}
+Except in cases of major disaster, the BPS shall have no unscheduled outages of the DMS pipelines extending over a period greater than productionMaxDowntime. A major disaster is defined as a natural disaster or act of war (e.g. flood, fire, hostile acts) that compromises or threatens to compromise the health and integrity of the DMS physical facility computing equipment, or operational personnel.
+
+\section{BPS Unscheduled Downtime}
+
+\label{DMS-BPS-REQ-0002}
+\textbf{ID:} DMS-BPS-REQ-0002
+
+\textbf{Specification:}
+The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
+
+\section{Processing Throughput}
+
+\label{DMS-BPS-REQ-0003}
+\textbf{ID:} DMS-BPS-REQ-0003
+
+\textbf{Specification:}
+The BPS shall dispatch and manage pipelines at scale needed to meet LSST objectives within their time constraints. Each of the pipelines have their unique requirements as specified in \citeds{LSE-81} (rows 215 through 223).
+
+\textbf{Discussion:}
+The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
+
+\section{Nightly Data Accessible Within Specified Time}
+
+\label{DMS-BPS-REQ-0004}
+\textbf{ID:} DMS-BPS-REQ-0004
+
+\textbf{Specification:}
+The BPS shall be capable of executing the offline Prompt Production pipelines in a time no greater than \textbf{L1PublicT}, without impacting observatory operations.   It includes catch-up of missed nightly processing as well as daytime processing such as the Moving Object Processing System.
+
+\textbf{Discussion:}
+This will put a requirement on the available resources at any point in the future. \textbf{L1PublicT} time also includes DBB replication time.
+
+\section{Calibration Images Available Within Specified Time}
+
+\label{DMS-BPS-REQ-0005}
+\textbf{ID:} DMS-BPS-REQ-0005
+
+\textbf{Specification:}
+The BPS shall be capable of executing the Daily Calibration Products Update payload producing Calibration products from a group of up to \textbf{nCalExpProc} related exposures that should be processed together making the outputs available from the DMS image archive within \textbf{calProcTime} of the end of the acquisition of images/data for that group.
+
+\textbf{Discussion:}
+This will put a requirement on the available resources at any point in the future.   \textbf{calProcTime} includes data transfer times external to the BPS. It also includes DBB replication time.
+
+\section{Pre Runtime}
+
+\subsection{Configuration Validation}
+
+\label{DMS-BPS-REQ-0006}
+\textbf{ID:} DMS-BPS-REQ-0006
+
+\textbf{Specification:}
+The BPS shall verify validity of the BPS configuration of a (sub)campaign to the extent possible at submit time.
+
+\textbf{Discussion:}
+This will not guarantee the science validity of the actual campaign execution or that it will successfully execute on particular platforms or input datasets, but should show that the campaign is generically capable of being executed, and there are no missing configurations.
+
+\subsection{Configuration Overrides}
+
+\label{DMS-BPS-REQ-0007}
+\textbf{ID:} DMS-BPS-REQ-0007
+
+\textbf{Specification:}
+The BPS shall allow the Operator to override the configuration options at any level, i.e., global, site, campaign, payload, pipeline step definition.
+
+\textbf{Discussion:}
+These overrides include but are not limited to: execution configuration (e.g. memory needed, computational platforms to use or avoid), science configuration (e.g. updating particular threshold), excluding certain data from a campaign. Differentiating between changes requiring change board approval vs. pre-approved is beyond the scope of this document and should be addressed in higher level document concerned with Operation requirements. (Use Case: PRE1)
+
+\subsection{Pipeline Modification}
+
+\label{DMS-BPS-REQ-0008}
+\textbf{ID:} DMS-BPS-REQ-0008
+
+\textbf{Specification:}
+The BPS shall allow the Operator to modify sequence of pipeline step definitions.  Modification includes addition of new pipeline step definitions, deleting, and reordering existing ones for science reasons.
+
+\textbf{Discussion:}
+Operations may require to run either only few first steps in a larger pipeline to produce outputs for debugging or few of its last steps starting from previous executions. (Use Case: PRE2)
+
+\subsection{Software selection}
+
+\label{DMS-BPS-REQ-0009}
+\textbf{ID:} DMS-BPS-REQ-0009
+
+\textbf{Specification:}
+The BPS shall allow the Operator to submit (sub)campaigns using specific versions of packages from the LSST Software Stack.
+
+\textbf{Discussion:}
+This does not require the BPS to accept lists of individual packages. For example, BPS could track container versions or personal EUPS tables both of which appear to BPS as a single entity yet allowing mix-and-match of individual software packages. The goal is to have regimented tracking for production, yet allow flexibility for development.  (Use Case: PRE3)
+
+\subsection{Execution order}
+
+\label{DMS-BPS-REQ-0010}
+\textbf{ID:} DMS-BPS-REQ-0010
+
+\textbf{Specification:}
+The BPS shall allow the Operator to set the order of a workflow execution.
+
+\textbf{Discussion:}
+For example, choose between breadth-first search and depth-first search order. The default shall be breadth-first search order.  (Use Case: PRE4)
+
+\subsection{Dynamic Workflow Generation}
+
+\label{DMS-BPS-REQ-0011}
+\textbf{ID:} DMS-BPS-REQ-0011
+
+\textbf{Specification:}
+The BPS shall create workflows dynamically in locations designated at submit time.
+
+\textbf{Discussion:}
+It is not required that the BPS should be able to do this efficiently for every job in the workflow. It is expected that there will be only a few if any such locations needed by pipelines. The dynamic generation is related to data discovery only. It does not include a support for conditional execution or rerunning jobs or parts of the workflow based on some quality metrics.  May not need if Pipelines guarantee to always generate output dataset and succeed in cases of non-fatal error.  (Use Case: PRE5)
+
+\subsection{Reducing Number of Jobs}
+
+\label{DMS-BPS-REQ-0012}
+\textbf{ID:} DMS-BPS-REQ-0012
+
+\textbf{Specification:}
+The BPS shall allow the Operator to group portions of the workflow into smaller number of compute jobs.
+
+\textbf{Discussion:}
+(Use Case: PRE6)
+
+\subsection{Conditional Workflow Aborts}
+
+\label{DMS-BPS-REQ-0013}
+\textbf{ID:} DMS-BPS-REQ-0013
+
+\textbf{Specification:}
+The BPS shall allow the operator to specify on a per pipeline step definition basis whether to stop or continue workflow execution on failures.
+
+\textbf{Discussion:}
+May not need if Pipelines guarantee to always generate output dataset and succeed in cases of non-fatal error.  (Use Case: PRE7)
+
+\subsection{Selective Dataset Persistence}
+
+\label{DMS-BPS-REQ-0014}
+\textbf{ID:} DMS-BPS-REQ-0014
+
+\textbf{Specification:}
+The BPS shall allow the Operator to specify which datasets to persist to Data Backbone
+
+\textbf{Discussion:}
+For debugging purposes, the Operator may want to inspect files which are not collected during regular payload executions.  (Use Case: PRE8)
+
+\subsection{Unexpected Data Handling}
+
+\label{DMS-BPS-REQ-0015}
+\textbf{ID:} DMS-BPS-REQ-0015
+
+\textbf{Specification:}
+The BPS shall allow the Operator to specify whether to save any unexpected (or faulty) files.
+
+\textbf{Discussion:}
+A files is considered to be unexpected (or faulty) when they are in a wrong place, have a wrong name, or are missing required metadata.  (Use Case: PRE9)
+
+\subsection{Campaign Prioritization}
+
+\label{DMS-BPS-REQ-0016}
+\textbf{ID:} DMS-BPS-REQ-0016
+
+\textbf{Specification:}
+The BPS shall allow the Operator to prioritize (sub)campaigns at the time of submission.
+
+\textbf{Discussion:}
+(Sub)campaigns with higher priorities will be dispatched for execution before those with lower ones.  (Use Case: PRE10)
+
+\subsection{Processing of Data from Special Programs}
+
+\label{DMS-BPS-REQ-0017}
+\textbf{ID:} DMS-BPS-REQ-0017
+
+\textbf{Specification:}
+The BPS shall be able to process special programs data with the offline production pipelines alongside data from the main survey.
+
+\textbf{Discussion:}
+See DMS-REQ-0320’s discussion for limitations
+
+\subsection{Campaign Submission}
+
+\label{DMS-BPS-REQ-0018}
+\textbf{ID:} DMS-BPS-REQ-0018
+
+\textbf{Specification:}
+The BPS shall allow the Operator to submit many payloads that can be managed as a single group (a campaign).
+
+\subsection{Programatic Submission}
+
+\label{DMS-BPS-REQ-0019}
+\textbf{ID:} DMS-BPS-REQ-0019
+
+\textbf{Specification:}
+The BPS shall provide an API allowing Operators to submit campaigns/pipelines programmatically.
+
+\textbf{Discussion:}
+(Use Case: PRE11)
+
+\subsection{Simultaneous Processing}
+
+\label{DMS-BPS-REQ-0020}
+\textbf{ID:} DMS-BPS-REQ-0020
+
+\textbf{Specification:}
+The BPS shall be able to run multiple workflows originating from different campaigns/payloads simultaneously without impacting each other and observatory operations.
+
+\textbf{Discussion:}
+Not having enough resources available can affect offline efficiency.
+
+\section{Runtime}
+
+\subsection{Immediate Termination}
+
+\label{DMS-BPS-REQ-0056}
+\textbf{ID:} DMS-BPS-REQ-0056
+
+\textbf{Specification:}
+The BPS shall allow the Operator to immediately terminate processing of a (sub)campaign.
+
+\textbf{Discussion:}
+(Use Case: RUN1)
+
+\subsection{Pausing Campaign}
+
+\label{DMS-BPS-REQ-0021}
+\textbf{ID:} DMS-BPS-REQ-0021
+
+\textbf{Specification:}
+The BPS shall allow the Operator to pause dispatching new workflows/jobs associated with a selected running (sub)campaign.
+
+\textbf{Discussion:}
+The freeing of resources can be done to start campaigns of a higher priority or for maintenance. This does not include the ability to change configuration, etc. for the (sub)campaign (see restarts). Either killing the job resulting in a controlled failure or waiting for the job to finish, but not starting any new jobs is sufficient to meet this requirement.  (Use Case: RUN2)
+
+\subsection{Alter Processing Resource}
+
+\label{DMS-BPS-REQ-0022}
+\textbf{ID:} DMS-BPS-REQ-0022
+
+\textbf{Specification:}
+The BPS shall allow the Operator to assign new compute resources to a (sub)campaign put on hold.
+
+\textbf{Discussion:}
+This does not include the ability to change configuration, etc. for the (sub)campaign (see restarts).  (Use Case: RUN3)
+
+\subsection{Alter Processing Priority}
+
+\label{DMS-BPS-REQ-0023}
+\textbf{ID:} DMS-BPS-REQ-0023
+
+\textbf{Specification:}
+The BPS shall allow the Operator to alter the priority for a pending (sub)campaign.
+
+\textbf{Discussion:}
+(Use Case: RUN5)
+
+\subsection{Processing Resource Selection}
+
+\label{DMS-BPS-REQ-0024}
+\textbf{ID:} DMS-BPS-REQ-0024
+
+\textbf{Specification:}
+If explicitly configured at submit time to run on specific computational resources (platforms or machines), the BPS shall dispatch workflows/jobs only to those resources.
+
+\textbf{Discussion:}
+(Use Case: RUN4)
+
+\subsection{Processing Resource Avoidance}
+
+\label{DMS-BPS-REQ-0025}
+\textbf{ID:} DMS-BPS-REQ-0025
+
+\textbf{Specification:}
+If explicitly configured at submit time to avoid running on specific computational resources (platforms or machines), the BPS shall not dispatch workflows/jobs to those resources.
+
+\textbf{Discussion:}
+(Use Case: RUN4)
+
+\subsection{Processing Platform Diversity}
+
+\label{DMS-BPS-REQ-0026}
+\textbf{ID:} DMS-BPS-REQ-0026
+
+\textbf{Specification:}
+The BPS shall support execution of workflows/jobs on computational platforms with varying architectures.
+
+\textbf{Discussion:}
+The BPS will support computational platforms with or without the shared filesystem, e.g., the LSST verification cluster as well as clusters in CC-IN2P3.  (Use Case: RUN4)
+
+\subsection{Automatic Avoidance of Faulty Resources Using BPS Data}
+
+\label{DMS-BPS-REQ-0027}
+\textbf{ID:} DMS-BPS-REQ-0027
+
+\textbf{Specification:}
+The BPS shall use failure information from workflow executions to determine if a resource is suspicious and automatically be avoided for future work.
+
+\textbf{Discussion:}
+Must be configurable (on/off, threshold level).  Failing resources (e.g. nodes for which number of failed jobs exceeds a given threshold) will be marked and excluded from the pool of available resources.  (Use Case: RUN10)
+
+\subsection{Reporting Faulty Resources}
+
+\label{DMS-BPS-REQ-0028}
+\textbf{ID:} DMS-BPS-REQ-0028
+
+\textbf{Specification:}
+The BPS should provide data to LSST Monitoring Services regarding suspected faulty resources in cases where not reportable by other means.
+
+\subsection{Automatic Avoidance of Faulty Resources Using LSST Monitoring Services}
+
+\label{DMS-BPS-REQ-0029}
+\textbf{ID:} DMS-BPS-REQ-0029
+
+\textbf{Specification:}
+The BPS should use information from LSST Monitoring Services to determine if a resource is suspicious and automatically be avoided for future work.
+
+\textbf{Discussion:}
+Some monitoring information may be complicated to interpret to mean that the resource is unusable for BPS.  (Use Case: RUN10)
+
+\subsection{Pipeline Middleware}
+
+\label{DMS-BPS-REQ-0030}
+\textbf{ID:} DMS-BPS-REQ-0030
+
+\textbf{Specification:}
+The BPS shall be able to execute (sub)campaigns which use the current stable version of Pipeline Middleware.
+
+\textbf{Discussion:}
+The initial generation for BPS development will be Gen3.  (Use Case: RUN6)
+
+\subsection{Optional Datasets}
+
+\label{DMS-BPS-REQ-0031}
+\textbf{ID:} DMS-BPS-REQ-0031
+
+\textbf{Specification:}
+The BPS shall support execution of workflows where pipeline step instances can have optional inputs and outputs.
+
+\textbf{Discussion:}
+Certain steps in a pipeline can proceed even when not all declared inputs are present. The BPS should continue pipeline execution in such cases providing the minimal requirements are met.   May not need if Pipelines guarantee to always generate output dataset and succeed in cases of non-fatal error.  (Use Case: RUN7)
+
+\subsection{Automatic Retries}
+
+\label{DMS-BPS-REQ-0032}
+\textbf{ID:} DMS-BPS-REQ-0032
+
+\textbf{Specification:}
+The BPS shall automatically retry failing jobs/pipeline step instances providing certain criteria are met.
+
+\textbf{Discussion:}
+The preference is to rerun the minimal portion of the workflow necessary, but it may involve rescheduling a job to a different node or platform.  (Use Case: RUN8)
+
+\subsection{Persisting Datasets When Retries}
+
+\label{DMS-BPS-REQ-0033}
+\textbf{ID:} DMS-BPS-REQ-0033
+
+\textbf{Specification:}
+The BPS shall upload only the files from the final retry to the Data Backbone.
+
+\textbf{Discussion:}
+(Use Case: RUN8, RUN9)
+
+\subsection{Persisting Logs and Standard Streams}
+
+\label{DMS-BPS-REQ-0034}
+\textbf{ID:} DMS-BPS-REQ-0034
+
+\textbf{Specification:}
+Depending on the configuration, the BPS shall upload files with logging information, stdout, and stderr from each retry to the Data Backbone.
+
+\textbf{Discussion:}
+(Use Case: RUN9)
+
+\subsection{Staging Files}
+
+\label{DMS-BPS-REQ-0035}
+\textbf{ID:} DMS-BPS-REQ-0035
+
+\textbf{Specification:}
+For computing platforms that have staging areas for pre/post job file transfers, the BPS shall transfer datasets between these areas and the Data Backbone.
+
+\textbf{Discussion:}
+(Use Case: RUN9)
+
+\subsection{Managing Staging Areas}
+
+\label{DMS-BPS-REQ-0036}
+\textbf{ID:} DMS-BPS-REQ-0036
+
+\textbf{Specification:}
+The BPS shall manage its file staging areas.
+
+\textbf{Discussion:}
+It will remove files that are no longer needed to make room for new files.
+
+\subsection{Managing Input Datasets}
+
+\label{DMS-BPS-REQ-0037}
+\textbf{ID:} DMS-BPS-REQ-0037
+
+\textbf{Specification:}
+Inside a compute job, the BPS shall transfer input data required by the pipeline step instances to the computing node on which they are being executed.
+
+\textbf{Discussion:}
+The transfers are from either a staging area or in the case of no staging area the Data Backbone directly.  (Use Case: RUN9)
+
+\subsection{Managing Output Datasets}
+
+\label{DMS-BPS-REQ-0038}
+\textbf{ID:} DMS-BPS-REQ-0038
+
+\textbf{Specification:}
+Inside a compute job, the BPS shall transfer output data produced by the pipeline setup instances from the computing node on which they were executed.
+
+\textbf{Discussion:}
+The transfers are to either a computing platform staging area or in the case of no staging area the Data Backbone directly.  (Use Case: RUN9)
+
+\subsection{Output Verification}
+
+\label{DMS-BPS-REQ-0039}
+\textbf{ID:} DMS-BPS-REQ-0039
+
+\textbf{Specification:}
+Based on payload configuration, the BPS shall verify if the required outputs were generated and properly persisted for each successful workflow.
+
+\textbf{Discussion:}
+(Use Case: RUN12)
+
+\subsection{Multinode Support}
+
+\label{DMS-BPS-REQ-0040}
+\textbf{ID:} DMS-BPS-REQ-0040
+
+\textbf{Specification:}
+The BPS shall be able to spread the execution of independent pipeline steps across multiple nodes based upon operational configuration.
+
+\textbf{Discussion:}
+It does not imply that the BPS will support execution of tasks using MPI (i.e., co-scheduling tasks on different machines).
+
+\subsection{Collecting Provenance}
+
+\label{DMS-BPS-REQ-0041}
+\textbf{ID:} DMS-BPS-REQ-0041
+
+\textbf{Specification:}
+The BPS shall record workflow provenance information for each pipeline step instance including any retries.
+
+\textbf{Discussion:}
+The provenance information will be detailed enough to allow for later re-runs with the same data dependencies, but not necessarily in the same exact order of execution.  The BPS system can execute a task multiple times, for debugging and provenance we should track the multiple executions.  (Use Case: RUN8)
+
+\subsection{Runtime Monitoring}
+
+\label{DMS-BPS-REQ-0042}
+\textbf{ID:} DMS-BPS-REQ-0042
+
+\textbf{Specification:}
+The BPS shall record and monitor runtime metrics for workflows/jobs/pipeline step instances including:
+\\
+
+    \begin{itemize}
+\item
+number of pending, running, finished, and failed job/pipeline step instances;
+
+\item
+amount of computer resources (e.g., CPUs, memory, disk space) in use vs idle;
+
+\item
+job runtime information (e.g., host name, memory, wall/CPU time, data input and output volume);
+
+\item
+what job, pipeline step instance, or framework step is currently running (if possible seeing stdout/stderr from the step) for when pipelines seem to be taking too long.
+
+    \end{itemize}
+
+\textbf{Discussion:}
+Some of these metrics will be stored permanently. Existing monitoring tools will be leveraged when possible.  (Use Case: RUN11)
+
+\subsection{Tracking Individual Tasks}
+
+\label{DMS-BPS-REQ-0043}
+\textbf{ID:} DMS-BPS-REQ-0043
+
+\textbf{Specification:}
+The BPS shall track execution of individual pipeline step instances which were grouped into a single compute job.
+
+\textbf{Discussion:}
+Tracking information may or may not be available during runtime.  (Use Case: RUN11)
+
+\subsection{Monitoring API}
+
+\label{DMS-BPS-REQ-0044}
+\textbf{ID:} DMS-BPS-REQ-0044
+
+\textbf{Specification:}
+The BPS shall provide an API that allows the Operator to programmatically monitor the progress of workflows/jobs.
+
+\textbf{Discussion:}
+(Use Case: RUN11)
+
+\subsection{Event Notifications}
+
+\label{DMS-BPS-REQ-0045}
+\textbf{ID:} DMS-BPS-REQ-0045
+
+\textbf{Specification:}
+The BPS shall be capable of sending notifications about (sub)campaign level events.
+
+\textbf{Discussion:}
+The events include (sub)campaign failure, completion, jobs taking longer than some Operator-specified threshold.  (Use Case: RUN13)
+
+\section{Post Runtime}
+
+\subsection{Provenance-Based Reruns}
+
+\label{DMS-BPS-REQ-0046}
+\textbf{ID:} DMS-BPS-REQ-0046
+
+\textbf{Specification:}
+The BPS shall have the ability to re-run a (sub)campaign based on provenance information.
+
+\textbf{Discussion:}
+This means repeating the same steps on same inputs and configurations in the same data dependency order, but it does not imply identical order of executions.
+
+\subsection{Automatic Restart Designation}
+
+\label{DMS-BPS-REQ-0047}
+\textbf{ID:} DMS-BPS-REQ-0047
+
+\textbf{Specification:}
+The BPS shall automatically designate points of failures as restart points.
+
+\subsection{Manual Restart Point Designation}
+
+\label{DMS-BPS-REQ-0048}
+\textbf{ID:} DMS-BPS-REQ-0048
+
+\textbf{Specification:}
+The BPS shall allow the Operator to designate the point of restart.
+
+\textbf{Discussion:}
+Sometimes a pipeline step needs to be rerun despite not having explicitly failed during previous processing attempt. (Use Case: POST2)
+
+\subsection{Campaign Restarts}
+
+\label{DMS-BPS-REQ-0049}
+\textbf{ID:} DMS-BPS-REQ-0049
+
+\textbf{Specification:}
+The BPS shall allow the Operator to restart a (sub)campaign execution from the designated restart point.
+
+\textbf{Discussion:}
+Restarting a pipeline may include one or more of the following: changing software stack to be used, changing science configuration, changing execution configuration, etc.  (Use Case: POST1, POST2)
+
+\subsection{Campaign Comparison}
+
+\label{DMS-BPS-REQ-0050}
+\textbf{ID:} DMS-BPS-REQ-0050
+
+\textbf{Specification:}
+The BPS shall persist the data from both successful and failed (sub)campaigns such that the Operator can use similar procedures and tools for both.
+
+\textbf{Discussion:}
+(Use Case: POST3, POST6)
+
+\subsection{Programatic Access to Runtime Metrics and Provenance}
+
+\label{DMS-BPS-REQ-0051}
+\textbf{ID:} DMS-BPS-REQ-0051
+
+\textbf{Specification:}
+The BPS shall provide an API that allows the Operator to programmatically view any runtime metrics and provenance saved.
+
+\textbf{Discussion:}
+(Use Case: POST4)
+
+\subsection{Runtime Monitoring}
+
+\label{DMS-BPS-REQ-0052}
+\textbf{ID:} DMS-BPS-REQ-0052
+
+\textbf{Specification:}
+For each execution step (which includes pipeline step instances, scheduling, data transfer, data loading, workflow generation, etc),  the BPS shall provide access to information including at least:
+\\
+
+    \begin{itemize}
+\item
+machine it was executed on;
+
+\item
+when the step was running and time it took to complete;
+
+\item
+amount of memory a process used during its execution;
+
+\item
+version of software used;
+
+\item
+job’s environment;
+
+\item
+what input datasets were used (if applicable);
+
+\item
+what output datasets were produced (if applicable);
+
+\item
+ whether the step finished successfully or failed (from the BPS perspective).
+
+    \end{itemize}
+
+\textbf{Discussion:}
+(Use Case: POST4)
+
+\subsection{Persisting Logs and Standard Streams}
+
+\label{DMS-BPS-REQ-0053}
+\textbf{ID:} DMS-BPS-REQ-0053
+
+\textbf{Specification:}
+The BPS shall persist stderr/stdout/log files of finished jobs.
+
+\textbf{Discussion:}
+The minimum to fulfill this requirement is access to files easily discoverable for a specific pipeline step instance.   Ideally, the data would be stored in a manner to make analyzing patterns easy. (Use Case: POST5)
+
+\subsection{Campaign Summary}
+
+\label{DMS-BPS-REQ-0054}
+\textbf{ID:} DMS-BPS-REQ-0054
+
+\textbf{Specification:}
+The BPS shall provide a summary of a (sub)campaign containing execution status and runtime metrics.
+
+\textbf{Discussion:}
+This summary will not include scientific metrics.  If possible, pipelines deviating from a norm will be highlighted. (Use Case: POST7)
+
+\subsection{Campaign Dataset Coverage}
+
+\label{DMS-BPS-REQ-0055}
+\textbf{ID:} DMS-BPS-REQ-0055
+
+\textbf{Specification:}
+It shall be possible to ask the BPS what images have been processed in specific campaigns.
+
+\textbf{Discussion:}
+Saving provenance and (sub)campaign execution status minimally satisfies this requirement.
+
+\addendum
+
+\bibliography{lsst,refs_ads}
+
+\end{document}
