@@ -9,9 +9,9 @@
 
 %% Retrieve date and model version
 \setDocUpstreamLocation{MagicDraw SysML}
-\setDocUpstreamVersion{218}
+\setDocUpstreamVersion{239}
 
-\date{2019-03-07}
+\date{2019-06-11}
 
 %% Allow arbitrary latex to be inserted at the end of the document.
 %% Define a new version of this command in metadata.tex. It will
@@ -50,6 +50,56 @@
 This document describes the requirements relating to the Batch Processing Services.  These services should not be confused with IT-level batch services like PBS, Slurm, and HTCondor.  The LSST Batch Production Services are a layer that sits above the IT-level batch services that executes and manages science payloads as "campaigns" consisting of a defined pipeline, a defined configuration, and defined inputs and outputs.
 
 This document does not cover Operation’s requirements that are outside of the scope of the Batch Production Services, e.g., having change board approval (or pre-approved rules) prior to changing a Production configuration. Where Use Cases are mentioned, they are defined in \citeds{LDM-633} which also includes a glossary.
+
+\section{Processing Reliability}
+
+\label{DMS-BPS-REQ-0001}
+\textbf{ID:} DMS-BPS-REQ-0001
+
+\textbf{Specification:}
+Except in cases of major disaster, the BPS shall have no unscheduled outages of the DMS pipelines extending over a period greater than productionMaxDowntime. A major disaster is defined as a natural disaster or act of war (e.g. flood, fire, hostile acts) that compromises or threatens to compromise the health and integrity of the DMS physical facility computing equipment, or operational personnel.
+
+\section{BPS Unscheduled Downtime}
+
+\label{DMS-BPS-REQ-0002}
+\textbf{ID:} DMS-BPS-REQ-0002
+
+\textbf{Specification:}
+The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
+
+\section{Processing Throughput}
+
+\label{DMS-BPS-REQ-0003}
+\textbf{ID:} DMS-BPS-REQ-0003
+
+\textbf{Specification:}
+The BPS shall dispatch and manage pipelines at scale needed to meet LSST objectives within their time constraints. Each of the pipelines have their unique requirements as specified in \citeds{LSE-81} (rows 215 through 223).
+
+\textbf{Discussion:}
+The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
+
+\section{Nightly Data Accessible Within Specified Time}
+
+\label{DMS-BPS-REQ-0004}
+\textbf{ID:} DMS-BPS-REQ-0004
+
+\textbf{Specification:}
+The BPS shall be capable of executing the offline Prompt Production pipelines in a time no greater than \textbf{L1PublicT}, without impacting observatory operations.   It includes catch-up of missed nightly processing as well as daytime processing such as the Moving Object Processing System.
+
+\textbf{Discussion:}
+This will put a requirement on the available resources at any point in the future. \textbf{L1PublicT} time also includes DBB replication time.
+
+\section{Calibration Images Available Within Specified Time}
+
+\label{DMS-BPS-REQ-0005}
+\textbf{ID:} DMS-BPS-REQ-0005
+
+\textbf{Specification:}
+The BPS shall be capable of executing the Daily Calibration Products Update payload producing Calibration products from a group of up to \textbf{nCalExpProc} related exposures that should be processed together making the outputs available from the DMS image archive within \textbf{calProcTime} of the end of the acquisition of images/data for that group.
+
+\textbf{Discussion:}
+This will put a requirement on the available resources at any point in the future.   \textbf{calProcTime} includes data transfer times external to the BPS. It also includes DBB replication time.
+
 \section{Pre Runtime}
 
 \subsection{Configuration Validation}
@@ -213,22 +263,6 @@ The BPS shall be able to run multiple workflows originating from different campa
 
 \textbf{Discussion:}
 Not having enough resources available can affect offline efficiency.
-
-\section{Processing Reliability}
-
-\label{DMS-BPS-REQ-0001}
-\textbf{ID:} DMS-BPS-REQ-0001
-
-\textbf{Specification:}
-Except in cases of major disaster, the BPS shall have no unscheduled outages of the DMS pipelines extending over a period greater than productionMaxDowntime. A major disaster is defined as a natural disaster or act of war (e.g. flood, fire, hostile acts) that compromises or threatens to compromise the health and integrity of the DMS physical facility computing equipment, or operational personnel.
-
-\section{BPS Unscheduled Downtime}
-
-\label{DMS-BPS-REQ-0002}
-\textbf{ID:} DMS-BPS-REQ-0002
-
-\textbf{Specification:}
-The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
 
 \section{Runtime}
 
@@ -667,39 +701,6 @@ It shall be possible to ask the BPS what images have been processed in specific 
 
 \textbf{Discussion:}
 Saving provenance and (sub)campaign execution status minimally satisfies this requirement.
-
-\section{Processing Throughput}
-
-\label{DMS-BPS-REQ-0003}
-\textbf{ID:} DMS-BPS-REQ-0003
-
-\textbf{Specification:}
-The BPS shall dispatch and manage pipelines at scale needed to meet LSST objectives within their time constraints. Each of the pipelines have their unique requirements as specified in \citeds{LSE-81} (rows 215 through 223).
-
-\textbf{Discussion:}
-The BPS shall be designed to facilitate unplanned repair activities expected not to exceed DMDowntime days per year.
-
-\section{Nightly Data Accessible Within Specified Time}
-
-\label{DMS-BPS-REQ-0004}
-\textbf{ID:} DMS-BPS-REQ-0004
-
-\textbf{Specification:}
-The BPS shall be capable of executing the offline Prompt Production pipelines in a time no greater than \textbf{L1PublicT}, without impacting observatory operations.   It includes catch-up of missed nightly processing as well as daytime processing such as the Moving Object Processing System.
-
-\textbf{Discussion:}
-This will put a requirement on the available resources at any point in the future. \textbf{L1PublicT} time also includes DBB replication time.
-
-\section{Calibration Images Available Within Specified Time}
-
-\label{DMS-BPS-REQ-0005}
-\textbf{ID:} DMS-BPS-REQ-0005
-
-\textbf{Specification:}
-The BPS shall be capable of executing the Daily Calibration Products Update payload producing Calibration products from a group of up to \textbf{nCalExpProc} related exposures that should be processed together making the outputs available from the DMS image archive within \textbf{calProcTime} of the end of the acquisition of images/data for that group.
-
-\textbf{Discussion:}
-This will put a requirement on the available resources at any point in the future.   \textbf{calProcTime} includes data transfer times external to the BPS. It also includes DBB replication time.
 
 \addendum
 
